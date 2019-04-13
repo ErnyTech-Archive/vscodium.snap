@@ -1,0 +1,78 @@
+name: vscodium
+version: 1.33.1
+summary: Code editing. Redefined.
+description: |
+  Binary releases of VS Code without MS branding/telemetry/licensing
+
+grade: stable
+confinement: classic
+
+architectures:
+  - build-on: amd64
+  - build-on: i386
+  
+apps:
+  vscodium:
+    command: electron-launch $SNAP/usr/share/vscodium/bin/vscodium
+    desktop: usr/share/applications/vscodium.desktop
+    environment:
+      DISABLE_WAYLAND: 1
+      GSETTINGS_SCHEMA_DIR: $SNAP/usr/share/glib-2.0/schemas
+
+  url-handler:
+    command: electron-launch $SNAP/usr/share/vscodium/bin/vscodium --open-url
+    desktop: usr/share/applications/vscodium-url-handler.desktop
+    environment:
+      DISABLE_WAYLAND: 1
+      GSETTINGS_SCHEMA_DIR: $SNAP/usr/share/glib-2.0/schemas
+
+parts:
+  gnome:
+    plugin: nil
+    build-packages:
+      - software-properties-common
+    override-pull: |
+      add-apt-repository -y ppa:ubuntu-desktop/gnome-3-26
+      apt -y update
+      apt -y upgrade
+      
+  vscodium:
+    after:
+      - gnome
+    plugin: dump
+    source: 
+      - on amd64: https://github.com/VSCodium/vscodium/releases/download/1.33.1/vscodium_1.33.1-1555005058_amd64.deb
+      - on i386: https://github.com/VSCodium/vscodium/releases/download/1.33.1/vscodium_1.33.1-1555005049_i386.deb
+    override-build: |
+      sed -i 's|Icon=com\.visualstudio\.code\.oss|Icon=/usr/share/pixmaps/com\.visualstudio\.code\.oss\.png|g' usr/share/applications/vscodium.desktop
+      sed -i 's|Icon=com\.visualstudio\.code\.oss|Icon=/usr/share/pixmaps/com\.visualstudio\.code\.oss\.png|g' usr/share/applications/vscodium-url-handler.desktop
+      snapcraftctl build
+    build-packages:
+      - wget
+      - curl
+      - tar
+    stage-packages:
+      - fcitx-frontend-gtk3
+      - gvfs-libs
+      - libasound2
+      - libgconf-2-4
+      - libglib2.0-bin
+      - libgnome-keyring0
+      - libgtk-3-0
+      - libnotify4
+      - libnspr4
+      - libnss3
+      - libpcre3
+      - libpulse0
+      - libsecret-1-0
+      - libxss1
+      - libxtst6
+      - zlib1g
+  wrapper:
+    after:
+      - vscodium
+    plugin: dump
+    source: files/
+    override-build: |
+      chmod +x electron-launch
+      snapcraftctl build 
