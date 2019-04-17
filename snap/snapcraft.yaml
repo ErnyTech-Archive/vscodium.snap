@@ -4,6 +4,7 @@ summary: Code editing. Redefined.
 description: |
   Binary releases of VS Code without MS branding/telemetry/licensing
 
+base: core18
 grade: stable
 confinement: classic
 
@@ -26,19 +27,8 @@ apps:
       DISABLE_WAYLAND: 1
       GSETTINGS_SCHEMA_DIR: $SNAP/usr/share/glib-2.0/schemas
 
-parts:
-  gnome:
-    plugin: nil
-    build-packages:
-      - software-properties-common
-    override-pull: |
-      add-apt-repository -y ppa:ubuntu-desktop/gnome-3-26
-      apt -y update
-      apt -y upgrade
-      
+parts:    
   vscodium:
-    after:
-      - gnome
     plugin: dump
     source: 
       - on amd64: https://github.com/VSCodium/vscodium/releases/download/1.33.1/vscodium_1.33.1-1555005058_amd64.deb
